@@ -1,0 +1,6 @@
+# Virtual environments
+venv/
+.env/
+.venv/
+
+data_ingestion/input/

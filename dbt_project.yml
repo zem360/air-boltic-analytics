@@ -1,0 +1,26 @@
+name: "air-boltic-analytics"
+version: "1.0.0"
+config-version: 2
+
+profile: "air-boltic-analytics"
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+test-paths: ["tests"]
+macro-paths: ["macros"]
+
+models:
+  air_boltic_analytics:
+    +materialized: view
+
+    bronze:
+      +schema: "air_boltic_bronze"
+      +materialized: table
+
+    silver:
+      +schema: "air_boltic_silver"
+      +materialized: view
+
+    gold:
+      +schema: "air_boltic_gold"
+      +materialized: table
