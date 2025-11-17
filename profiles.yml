@@ -1,4 +1,4 @@
-air_boltic_analytics:
+air-boltic-analytics:
   target: dev
   outputs:
     dev:
