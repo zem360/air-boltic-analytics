@@ -11,12 +11,13 @@ select
     t.airplane_id,
     t.start_time,
     t.end_time,
-
     date_diff('hour',t.start_time, t.end_time) as trip_duration_hours,
-    cast(t.start_time as date)                 as trip_date,
-    extract(dow  from t.start_time)            as trip_day_of_week,  
-    extract(hour from t.start_time)            as trip_start_hour,
-
+    case
+        when date_diff('hour', t.start_time, t.end_time) < 2 then 'short'
+        when date_diff('hour', t.start_time, t.end_time) < 5 then 'mid'
+        else 'long'
+    end as trip_duration_category,
+    cast(t.start_time as date) as trip_date,
     case
         when cast(t.start_time as date) <> cast(t.end_time as date) then true
         else false
