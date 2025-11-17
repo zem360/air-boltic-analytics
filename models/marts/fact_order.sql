@@ -21,9 +21,14 @@ select
         else false
     end as is_cancelled,
     c.customer_group_id,
-    cg.type          as customer_group_type,
-    cg.name          as customer_group_name,
-    cg.is_corporate  as is_corporate_customer,
+    case
+        when lower(o.status) = 'booked' then true
+        else false
+    end as is_booked,
+    case
+        when lower(o.status) = 'finished' then true
+        else false
+    end as is_finished,
     t.start_time as trip_start_time,
     t.end_time   as trip_end_time,
     cast(t.start_time as date)       as trip_date,
@@ -34,7 +39,5 @@ select
 from {{ ref('stg_order') }} o
 left join {{ ref('dim_customer') }} c  
     on c.customer_id = o.customer_id
-left join {{ ref('dim_customer_group') }} cg 
-    on cg.customer_group_id = c.customer_group_id
 left join {{ ref('fact_trip') }} t  
     on t.trip_id = o.trip_id
