@@ -1,0 +1,212 @@
+version: 2
+
+models:
+  - name: dim_airplane_model
+    description: "Reference table describing every manufacturer/model combination and its capabilities."
+    columns:
+      - name: airplane_model_id
+        description: "Surrogate key generated from manufacturer and model."
+        tests:
+          - unique
+          - not_null
+      - name: manufacturer
+        description: "Aircraft manufacturer name."
+        tests:
+          - not_null
+      - name: model
+        description: "Aircraft model that, paired with manufacturer, defines a platform."
+        tests:
+          - not_null
+      - name: max_seats
+        description: "Maximum number of passengers supported by the model."
+      - name: max_weight
+        description: "Maximum takeoff weight supported by the model."
+      - name: max_distance
+        description: "Maximum range that the plane can fly without refuel."
+      - name: engine_type
+        description: "Engine propulsion type used by the model."
+
+  - name: dim_airplane
+    description: "Grain is one row per physical airplane, enriched with its model information."
+    columns:
+      - name: airplane_id
+        description: "Primary key for the physical airplane."
+        tests:
+          - unique
+          - not_null
+      - name: airplane_model_id
+        description: "Foreign key to dim_airplane_model."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_airplane_model')
+                field: airplane_model_id
+      - name: manufacturer
+        description: "Manufacturer recorded for the actual airplane."
+
+  - name: dim_city
+    description: "Unique list of cities used across trips."
+    columns:
+      - name: city_id
+        description: "Surrogate key for the city."
+        tests:
+          - unique
+          - not_null
+      - name: city_name
+        description: "Name of the city appearing in trip data."
+        tests:
+          - not_null
+      - name: country
+        description: "Country to which the city belongs (null until sourced)."
+      - name: region
+        description: "Administrative region for the city (null until sourced)."
+
+  - name: dim_customer_group
+    description: "Details about customer groups/companies."
+    columns:
+      - name: customer_group_id
+        description: "Primary key for the customer group."
+        tests:
+          - unique
+          - not_null
+      - name: name
+        description: "Group name."
+        tests:
+          - not_null
+      - name: type
+        description: "Group type such as Company or Private."
+      - name: registry_number
+        description: "External registration identifier if provided."
+      - name: is_corporate
+        description: "Flag set when the group type represents a company."
+
+  - name: dim_customer
+    description: "Customer dimension enriched with group and cleaned phone numbers."
+    columns:
+      - name: customer_id
+        description: "Primary key for the customer."
+        tests:
+          - unique
+          - not_null
+      - name: name
+        description: "Full name for the customer."
+        tests:
+          - not_null
+      - name: customer_group_id
+        description: "Optional foreign key to dim_customer_group."
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_customer_group')
+                field: customer_group_id
+      - name: email
+        description: "Customer email address."
+      - name: phone_number_cleaned
+        description: "Digits-only normalized phone number."
+      - name: is_corporate
+        description: "Indicator inherited from the associated customer group."
+
+  - name: fact_trip
+    description: "Flight instances, one row per scheduled trip with derived indicators."
+    columns:
+      - name: trip_id
+        description: "Primary key for the trip."
+        tests:
+          - unique
+          - not_null
+      - name: origin_city_id
+        description: "Foreign key to the origin city dimension record."
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_city')
+                field: city_id
+      - name: destination_city_id
+        description: "Foreign key to the destination city dimension record."
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_city')
+              field: city_id
+      - name: airplane_id
+        description: "Foreign key to dim_airplane."
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_airplane')
+                field: airplane_id
+      - name: start_time
+        description: "Scheduled departure timestamp."
+      - name: end_time
+        description: "Scheduled arrival timestamp."
+      - name: trip_duration_hours
+        description: "Duration of the trip in hours."
+      - name: trip_duration_category
+        description: "Categorizes trips into short, mid, or long buckets based on duration."
+      - name: trip_date
+        description: "Date portion of the departure timestamp."
+      - name: trip_day_of_week
+        description: "Day of week derived from the departure timestamp."
+      - name: trip_start_hour
+        description: "Hour of the day the trip begins."
+      - name: is_overnight_trip
+        description: "True when the departure and arrival dates differ."
+      - name: is_weekend_trip
+        description: "True when the trip departs on a weekend."
+
+  - name: fact_order
+    description: "Ticket sales fact table enriched with customer, seat, and trip features."
+    columns:
+      - name: order_id
+        description: "Primary key for the order."
+        tests:
+          - unique
+          - not_null
+      - name: customer_id
+        description: "Foreign key to the purchasing customer."
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_customer')
+                field: customer_id
+      - name: trip_id
+        description: "Foreign key to the associated trip."
+        tests:
+          - relationships:
+              arguments:
+                to: ref('fact_trip')
+              field: trip_id
+      - name: price_eur
+        description: "Ticket price in euros."
+      - name: seat_no
+        description: "Seat identifier as provided in the booking."
+      - name: status
+        description: "Raw booking status."
+      - name: seat_position
+        description: "Classification of the seat as window, aisle, or middle."
+      - name: is_cancelled
+        description: "True when the order status indicates a cancellation."
+      - name: is_booked
+        description: "True when the order status equals 'Booked'."
+      - name: is_finished
+        description: "True when the order status equals 'Finished'."
+      - name: customer_group_id
+        description: "Customer's group reference."
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_customer_group')
+                field: customer_group_id
+      - name: trip_start_time
+        description: "Start timestamp from the referenced trip record."
+      - name: trip_end_time
+        description: "End timestamp from the referenced trip record."
+      - name: trip_date
+        description: "Date of the trip for the order."
+      - name: trip_day_of_week
+        description: "Day of week for the trip associated with the order."
+      - name: trip_month
+        description: "Month of the trip start."
+      - name: trip_year
+        description: "Calendar year of the trip start."
