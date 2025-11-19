@@ -1,6 +1,6 @@
 # Air Boltics Data Model Implementation
 
-> The repo implements the data model designed for Air Boltic. [Data Model](WriteUp.md)
+> The repo implements the data model designed for Air Boltic. You can find the WriteUp for the modeling process here: [Data Model](WriteUp.md)
 
 ## How to run the project?
 
