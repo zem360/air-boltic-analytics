@@ -3,7 +3,7 @@ import pandas as pd
 
 TABLES = [
     "dim_airplane",
-    "dim_airplane_model"
+    "dim_airplane_model",
     "dim_city",
     "dim_customer_group",
     "dim_customer",
