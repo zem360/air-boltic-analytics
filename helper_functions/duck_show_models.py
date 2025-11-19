@@ -14,7 +14,7 @@ TABLES = [
 con = duckdb.connect("duckdb/database.duckdb")
 
 for table in TABLES:
-    res = pd.read_sql(f"SELECT * FROM {table}", con=con)
+    res = pd.read_sql(f"SELECT * FROM main_marts.{table}", con=con)
     print(res.head(50))
 
 con.close()
