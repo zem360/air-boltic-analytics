@@ -10,7 +10,7 @@ logs/
 target/
 
 duck_client.py
-duckdb/
+duckdb/database.duckdb
 dbt_packages/
 
 
