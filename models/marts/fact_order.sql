@@ -1,6 +1,6 @@
 {{
     config(
-        materialized='table' -- Incremental ---
+        materialized='table' 
     )
 }}
 
@@ -37,11 +37,11 @@ left join {{ ref('dim_customer') }} c
 left join {{ ref('fact_trip') }} t  
     on t.trip_id = o.trip_id
 
-"""
+{#
 Note to self : There should be an incremental filter here, but there is no order date field to filter on.
 
 {% if is_incremental() %}
   where o.order_date > (select max(o.order_date) from {{ this }})
 {% endif %} ---
 
-""" 
+#}
