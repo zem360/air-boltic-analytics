@@ -35,5 +35,5 @@ left join {{ ref('dim_city') }} as dc
     on dc.city_name = t.destination_city
 
 {% if is_incremental() %}
-  and cast(t.start_time as date) > (select max(cast(t.start_time as date)) from {{ this }})
+  where start_time  > (select max(start_time) from {{ this }})
 {% endif %}
