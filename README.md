@@ -79,7 +79,6 @@ dbt run --select marts
 Use the helper scripts to show all tables in marts.
 
 ```bash
-# Generate documentation
 python helper_functions/duck_show_models.py
 
 ```
