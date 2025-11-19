@@ -1,6 +1,7 @@
 {{
     config(
-        materialized='table',
+        materialized='incremental',
+        unique_key='trip_id'
     )
 }}
 
@@ -32,3 +33,7 @@ left join {{ ref('dim_city') }} as oc
     on oc.city_name = t.origin_city
 left join {{ ref('dim_city') }} as dc
     on dc.city_name = t.destination_city
+
+{% if is_incremental() %}
+  and cast(t.start_time as date) > (select max(cast(t.start_time as date)) from {{ this }})
+{% endif %}
